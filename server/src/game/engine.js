@@ -22,6 +22,7 @@ function createGame(players) {
     bids: {},
     tricksWon: Object.fromEntries(playerIds.map(id => [id, 0])),
     bonusPoints: Object.fromEntries(playerIds.map(id => [id, 0])),
+    bonusDetails: Object.fromEntries(playerIds.map(id => [id, []])),
     currentTrick: { leadPlayerIndex: 0, leadSuit: null, plays: [] },
     lastTrickResult: null,
     roundHistory: [],
@@ -55,6 +56,7 @@ function dealCards(gameState) {
     gameState.bids[id] = null;
     gameState.tricksWon[id] = 0;
     gameState.bonusPoints[id] = 0;
+    gameState.bonusDetails[id] = [];
   });
 
   gameState.currentTrick = {
@@ -132,6 +134,8 @@ function playCard(gameState, playerId, cardId) {
       gameState.tricksWon[winnerId] = (gameState.tricksWon[winnerId] || 0) + 1;
       for (const bonus of trickResult.bonuses) {
         gameState.bonusPoints[bonus.playerId] = (gameState.bonusPoints[bonus.playerId] || 0) + bonus.amount;
+        if (!gameState.bonusDetails[bonus.playerId]) gameState.bonusDetails[bonus.playerId] = [];
+        gameState.bonusDetails[bonus.playerId].push({ amount: bonus.amount, reason: bonus.reason });
       }
     }
 
@@ -257,9 +261,12 @@ function calculateRoundSummary(gameState) {
     const bid = gameState.bids[id];
     const tricksWon = gameState.tricksWon[id];
     const bonus = gameState.bonusPoints[id] || 0;
+    const details = gameState.bonusDetails[id] || [];
+    const bidMet = bid !== 0 && bid === tricksWon;
     const baseScore = calculateRoundScore(bid, tricksWon, 0, gameState.round);
     const total = calculateRoundScore(bid, tricksWon, bonus, gameState.round);
-    return { playerId: id, bid, tricksWon, baseScore, bonus, total };
+    // 只有竞标成功才展示加分明细
+    return { playerId: id, bid, tricksWon, baseScore, bonus, bonusDetails: bidMet ? details : [], total };
   });
   return { scores };
 }

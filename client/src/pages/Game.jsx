@@ -248,15 +248,25 @@ function Game({ roomId, playerId, playerName, roomData, onBack }) {
           {roundScores.map(sc => {
             const name = getName(sc.playerId);
             const hit = sc.bid === sc.tricksWon;
+            const hasBonus = hit && sc.bonusDetails && sc.bonusDetails.length > 0;
             return (
-              <div key={sc.playerId} style={{ ...s.row, marginBottom: 6 }}>
-                <span style={{ flex: 1, fontSize: 14 }}>{name}</span>
-                <span style={{ fontSize: 13, color: '#9ca3af', marginRight: 8 }}>
-                  竞标{sc.bid} 赢{sc.tricksWon}
-                </span>
-                <span style={{ fontSize: 14, color: hit ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>
-                  {sc.total > 0 ? '+' : ''}{sc.total}分
-                </span>
+              <div key={sc.playerId} style={{ ...s.row, flexDirection: 'column', alignItems: 'flex-start', marginBottom: 6 }}>
+                <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+                  <span style={{ flex: 1, fontSize: 14 }}>{name}</span>
+                  <span style={{ fontSize: 13, color: '#9ca3af', marginRight: 8 }}>
+                    竞标{sc.bid} 赢{sc.tricksWon}
+                  </span>
+                  <span style={{ fontSize: 14, color: hit ? '#4ade80' : '#f87171', fontWeight: 'bold' }}>
+                    {sc.total > 0 ? '+' : ''}{sc.total}分
+                  </span>
+                </div>
+                {hasBonus && (
+                  <div style={{ fontSize: 12, color: '#f5c842', marginTop: 4, lineHeight: 1.6 }}>
+                    {sc.bonusDetails.map((d, i) => (
+                      <span key={i} style={{ marginRight: 8 }}>+{d.amount}（{d.reason}）</span>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
